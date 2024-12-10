@@ -3,7 +3,9 @@ import axiosInstance from '../axios/axiosInstance';
 import { useNavigate } from 'react-router-dom';
 
 interface RegisterResponse {
-  username: string;
+  message: string;
+  success: boolean;
+  username?: string;
 }
 
 function Register() {
@@ -20,9 +22,9 @@ function Register() {
         },
       );
 
-      const { username } = response.data;
+      const { message, username } = response.data;
       notification.success({
-        message: 'Registration Successful',
+        message: `${message}`,
         description: `You have successfully registered as ${username}. Redirecting to login page.`,
         placement: 'topRight',
       });
@@ -86,7 +88,7 @@ function Register() {
 
         <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
           <Button type="primary" htmlType="submit">
-            Submit
+            Register
           </Button>
         </Form.Item>
       </Form>

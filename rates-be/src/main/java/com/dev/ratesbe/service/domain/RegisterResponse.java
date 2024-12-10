@@ -7,5 +7,6 @@ public class RegisterResponse {
 
     String message;
     boolean isSuccess;
+    String username;
 
 }

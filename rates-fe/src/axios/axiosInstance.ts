@@ -5,7 +5,10 @@ const getAuthToken = (): string | null => {
 };
 
 const axiosInstance = axios.create({
-    baseURL: 'http://localhost:8080/api/v1/'
+  baseURL: 'http://localhost:8080/api/v1/',
+  headers: {
+    Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+  },
 });
 
 axiosInstance.interceptors.request.use(
@@ -18,7 +21,7 @@ axiosInstance.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 axiosInstance.interceptors.response.use(
@@ -28,7 +31,7 @@ axiosInstance.interceptors.response.use(
       localStorage.removeItem('authToken');
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export default axiosInstance;
