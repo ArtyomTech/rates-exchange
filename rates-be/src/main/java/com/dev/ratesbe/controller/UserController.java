@@ -27,15 +27,16 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody User user) {
         try {
+            String username = user.getUsername();
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword())
+                    new UsernamePasswordAuthenticationToken(username, user.getPassword())
             );
             String jwt = jwtTokenProvider.generateToken(authentication);
-            return ResponseEntity.ok(new LoginResponse("Login succeeded", true, jwt));
+            return ResponseEntity.ok(new LoginResponse("Login succeeded", true, username, jwt));
         } catch (BadCredentialsException e) {
             return ResponseEntity
                     .status(HttpStatus.UNAUTHORIZED)
-                    .body(new LoginResponse("Incorrect credentials", false, null));
+                    .body(new LoginResponse("Incorrect credentials", false, null, null));
         }
     }
 

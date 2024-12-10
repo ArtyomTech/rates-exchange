@@ -1,7 +1,7 @@
 import { Select, Input, Button, message, Typography } from 'antd';
 import { ArrowRightOutlined } from '@ant-design/icons';
 import { CurrencyRate } from '../models/currencyRate';
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 interface CurrencyConverterProps {
   currencyRates: CurrencyRate[];

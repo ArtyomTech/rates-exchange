@@ -7,6 +7,7 @@ public class LoginResponse {
 
     String message;
     boolean isSuccess;
+    String username;
     String token;
 
 }
