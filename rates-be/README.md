@@ -1,4 +1,4 @@
-# My Spring Boot Application
+# Rates Exchange BE App
 
 This is a Spring Boot application that uses Java 11 and Spring Boot version 2.7.18. Follow the instructions below to set up and run the application locally.
 
