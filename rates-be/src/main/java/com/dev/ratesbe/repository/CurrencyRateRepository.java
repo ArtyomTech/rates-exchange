@@ -1,7 +1,7 @@
 package com.dev.ratesbe.repository;
 
 import com.dev.ratesbe.repository.entity.CurrencyRateEntity;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface CurrencyRateRepository extends CrudRepository<CurrencyRateEntity, String> {
+public interface CurrencyRateRepository extends JpaRepository<CurrencyRateEntity, String> {
 }

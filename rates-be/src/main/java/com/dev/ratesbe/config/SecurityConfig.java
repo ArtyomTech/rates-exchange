@@ -32,7 +32,7 @@ public class SecurityConfig {
                 .and()
                 .authorizeRequests()
                 .antMatchers("/api/v1/user/login", "/api/v1/user/register").permitAll()
-                .antMatchers("/api/v1/currency-rates").authenticated()
+                .antMatchers("/api/v1/currency-rates/**").authenticated()
                 .anyRequest().authenticated()
                 .and()
                 .addFilterBefore(new JwtFilter(jwtTokenProvider, authUserDetailsService), UsernamePasswordAuthenticationFilter.class);

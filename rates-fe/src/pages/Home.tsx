@@ -48,36 +48,35 @@ function Home() {
   const signOut = () => {
     logout();
     setUsername(null);
-    localStorage.removeItem('authToken');
     navigate('/login');
   };
 
   return (
     <>
       {loading ? (
-        <Spin size="large" />
+        <Container>
+          <Spin size="large" />
+        </Container>
       ) : (
         <Container>
-          <Card bordered>
+          <Card bordered style={{ width: '800px', margin: '0 auto' }}>
             <Row justify="end" style={{ marginBottom: '20px' }}>
               <Button onClick={signOut}>Sign Out</Button>
             </Row>
             {username && <h2>Welcome, {username}!</h2>}
-            <div style={{ width: '100%' }}>
-              <Menu
-                onClick={handleMenuClick}
-                selectedKeys={[selectedMenu]}
-                mode="horizontal"
-                items={menuItems}
-                style={{ marginBottom: '20px' }}
-              />
+            <Menu
+              onClick={handleMenuClick}
+              selectedKeys={[selectedMenu]}
+              mode="horizontal"
+              items={menuItems}
+              style={{ marginBottom: '20px' }}
+            />
 
-              {selectedMenu === 'currencyRates' && (
-                <CurrencyRates currencyRates={currencyRates} />
-              )}
+            {selectedMenu === 'currencyRates' && (
+              <CurrencyRates currencyRates={currencyRates} />
+            )}
 
-              {selectedMenu === 'conversionHistory' && <ConvertionsHistory />}
-            </div>
+            {selectedMenu === 'conversionHistory' && <ConvertionsHistory />}
           </Card>
         </Container>
       )}

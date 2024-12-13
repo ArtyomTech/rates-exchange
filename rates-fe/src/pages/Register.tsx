@@ -2,6 +2,7 @@ import { Button, Card, Form, Input, notification, Typography } from 'antd';
 import axiosInstance from '../axios/axiosInstance';
 import Container from '../components/Container';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 interface RegisterResponse {
   message: string;
@@ -33,6 +34,19 @@ function Register() {
       navigate('/login');
     } catch (error) {
       console.error('Error:', error);
+      if (axios.isAxiosError(error)) {
+        notification.error({
+          message: 'Request Failed',
+          description:
+            error.response?.data.message || 'An unknown error occurred',
+        });
+      } else {
+        notification.error({
+          message: 'Request Failed',
+          description: 'An unknown error occurred',
+          duration: 3,
+        });
+      }
     }
   };
 

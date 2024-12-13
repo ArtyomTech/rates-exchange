@@ -1,20 +1,30 @@
-import { Select, Input, Button, message, Typography } from 'antd';
+import { Select, Input, Button, message, Form, Col, Card } from 'antd';
 import { ArrowRightOutlined } from '@ant-design/icons';
 import { CurrencyRate } from '../models/currencyRate';
+import axiosInstance from '../axios/axiosInstance';
 import { useState } from 'react';
 
 interface CurrencyConverterProps {
   currencyRates: CurrencyRate[];
 }
 
+interface Conversion {
+  fromCurrency: string;
+  toCurrency: string;
+  amount: number;
+  result: number;
+}
+
 function CurrencyConverter({ currencyRates }: CurrencyConverterProps) {
-  const [amount, setAmount] = useState<number | string>('');
-  const [fromCurrency, setFromCurrency] = useState<string>('');
-  const [toCurrency, setToCurrency] = useState<string>('');
+  const [form] = Form.useForm();
   const [convertedAmount, setConvertedAmount] = useState<number | string>('');
   const [finalToCurrency, setFinalToCurrency] = useState<string>('');
+  const maxAmount = 1_000_000;
+  const formattedAmount = new Intl.NumberFormat('en-GB').format(maxAmount);
 
   const handleConversion = () => {
+    const { amount, fromCurrency, toCurrency } = form.getFieldsValue();
+
     if (amount && fromCurrency && toCurrency) {
       const fromRate = currencyRates.find(
         (rate) => rate.currency === fromCurrency,
@@ -27,6 +37,13 @@ function CurrencyConverter({ currencyRates }: CurrencyConverterProps) {
         const result = (Number(amount) * toRate) / fromRate;
         setConvertedAmount(result.toFixed(3));
         setFinalToCurrency(toCurrency);
+
+        sendConversion({
+          fromCurrency,
+          toCurrency,
+          amount,
+          result: parseFloat(result.toFixed(3)),
+        });
       } else {
         message.error('Invalid currency selected');
       }
@@ -35,60 +52,138 @@ function CurrencyConverter({ currencyRates }: CurrencyConverterProps) {
     }
   };
 
+  const sendConversion = async ({
+    fromCurrency,
+    toCurrency,
+    amount,
+    result,
+  }: Conversion): Promise<void> => {
+    try {
+      await axiosInstance.post('currency-rates/conversion', {
+        fromCurrency,
+        toCurrency,
+        amount,
+        result,
+      });
+      console.log('Conversion data sent successfully');
+    } catch (error) {
+      console.error('Error sending data to backend:', error);
+      message.error('Failed to send conversion data');
+    }
+  };
+
   return (
-    <div style={{ marginBottom: '20px' }}>
-      <Typography.Text strong>Convert From:</Typography.Text>
-      <Select
-        placeholder="From Currency"
-        style={{ width: 120, margin: '10px' }}
-        value={fromCurrency}
-        onChange={setFromCurrency}
+    <>
+      <Form
+        form={form}
+        onFinish={handleConversion}
+        style={{ marginBottom: '20px' }}
+        layout="inline"
       >
-        {currencyRates.map((rate) => (
-          <Select.Option key={rate.currency} value={rate.currency}>
-            {rate.currency}
-          </Select.Option>
-        ))}
-      </Select>
+        <Col>
+          <Form.Item
+            name="fromCurrency"
+            rules={[{ required: true, message: 'Please select a currency' }]}
+            style={{ width: '150px' }}
+          >
+            <Select placeholder="From Currency">
+              {currencyRates.map((rate) => (
+                <Select.Option key={rate.currency} value={rate.currency}>
+                  {rate.currency}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+        </Col>
 
-      <Input
-        style={{ width: 120, marginRight: '10px' }}
-        value={amount}
-        onChange={(e) => setAmount(e.target.value)}
-        placeholder="Amount"
-        type="number"
-      />
+        <Col>
+          <Form.Item
+            name="amount"
+            rules={[
+              { required: true, message: 'Amount is required' },
+              {
+                validator: (_, value) => {
+                  if (value > maxAmount) {
+                    return Promise.reject(
+                      new Error(
+                        `Amount cannot exceed ${new Intl.NumberFormat('en-GB').format(maxAmount)}`,
+                      ),
+                    );
+                  }
+                  if (value && Number(value) > 0) {
+                    return Promise.resolve();
+                  }
 
-      <ArrowRightOutlined style={{ margin: '0 10px' }} />
+                  return Promise.reject(new Error('Amount is invalid'));
+                },
+              },
+            ]}
+            style={{ width: '150px' }}
+          >
+            <Input
+              placeholder="Amount"
+              type="text"
+              onInput={(e) => {
+                const input = e.target as HTMLInputElement;
+                let inputValue = input.value;
+                const regex = /^\d{1,7}(\.\d{0,3})?$/;
+                if (regex.test(inputValue)) {
+                  if (Number(inputValue) > maxAmount) {
+                    message.error(`Amount cannot exceed ${formattedAmount}`);
+                    inputValue = maxAmount.toString();
+                  }
 
-      <Typography.Text strong>Convert To:</Typography.Text>
-      <Select
-        placeholder="To Currency"
-        style={{ width: 120, margin: '10px' }}
-        value={toCurrency}
-        onChange={setToCurrency}
-      >
-        {currencyRates.map((rate) => (
-          <Select.Option key={rate.currency} value={rate.currency}>
-            {rate.currency}
-          </Select.Option>
-        ))}
-      </Select>
+                  input.value = inputValue;
+                } else {
+                  inputValue = inputValue.slice(0, -1);
+                  input.value = inputValue;
+                }
+              }}
+            />
+          </Form.Item>
+        </Col>
 
-      <Button
-        onClick={handleConversion}
-        type="primary"
-        style={{ marginLeft: '10px' }}
-      >
-        Convert
-      </Button>
+        <Col style={{ paddingRight: '16px', paddingTop: '4px' }}>
+          <ArrowRightOutlined />
+        </Col>
+
+        <Col>
+          <Form.Item
+            name="toCurrency"
+            rules={[{ required: true, message: 'Please select a currency' }]}
+            style={{ width: '150px' }}
+          >
+            <Select placeholder="To Currency">
+              {currencyRates.map((rate) => (
+                <Select.Option key={rate.currency} value={rate.currency}>
+                  {rate.currency}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+        </Col>
+
+        <Col>
+          <Form.Item style={{ marginLeft: '8px' }}>
+            <Button type="primary" htmlType="submit">
+              Convert
+            </Button>
+          </Form.Item>
+        </Col>
+      </Form>
 
       {convertedAmount && finalToCurrency && (
-        <div style={{ marginTop: '10px' }}>
+        <Card
+          style={{
+            margin: '20px 0',
+            backgroundColor: '#f6ffed',
+            borderColor: '#b7eb8f',
+          }}
+        >
           <strong>Converted Amount:</strong> {convertedAmount} {finalToCurrency}
-        </div>
+        </Card>
       )}
-    </div>
+    </>
   );
 }
 

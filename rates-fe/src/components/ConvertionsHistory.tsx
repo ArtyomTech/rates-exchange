@@ -1,3 +1,7 @@
+import axiosInstance from '../axios/axiosInstance';
+
+import { useEffect, useState } from 'react';
+import { format } from 'date-fns';
 import { Table } from 'antd';
 
 interface ConversionHistoryRecord {
@@ -6,52 +10,102 @@ interface ConversionHistoryRecord {
   toCurrency: string;
   amount: number;
   result: number;
+  createdAt: string;
+  fromExchangeRateLink: string;
+  toExchangeRateLink: string;
 }
-
-const data: ConversionHistoryRecord[] = [
-  {
-    key: '1',
-    fromCurrency: 'USD',
-    toCurrency: 'EUR',
-    amount: 40,
-    result: 85,
-  },
-  {
-    key: '2',
-    fromCurrency: 'EUR',
-    toCurrency: 'GBP',
-    amount: 20,
-    result: 72,
-  },
-];
 
 const columns = [
   {
     title: 'From Currency',
     dataIndex: 'fromCurrency',
-    key: 'fromCurrency',
+    width: '10%',
+    render: (currency: string, record: ConversionHistoryRecord) => (
+      <a
+        href={record.fromExchangeRateLink}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {currency}
+      </a>
+    ),
+    sorter: (a: ConversionHistoryRecord, b: ConversionHistoryRecord) =>
+      a.fromCurrency.localeCompare(b.fromCurrency),
   },
   {
     title: 'To Currency',
     dataIndex: 'toCurrency',
-    key: 'toCurrency',
+    width: '10%',
+    render: (currency: string, record: ConversionHistoryRecord) => (
+      <a
+        href={record.toExchangeRateLink}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {currency}
+      </a>
+    ),
+    sorter: (a: ConversionHistoryRecord, b: ConversionHistoryRecord) =>
+      a.toCurrency.localeCompare(b.toCurrency),
   },
   {
     title: 'Amount',
     dataIndex: 'amount',
-    key: 'amount',
-    render: (amount: number) => `${amount.toFixed(3)}`,
+    width: '20%',
+    render: (amount: number) => {
+      const formattedAmount = new Intl.NumberFormat('en-GB', {
+        maximumFractionDigits: 3,
+      }).format(amount);
+      return formattedAmount;
+    },
   },
   {
     title: 'Result',
     dataIndex: 'result',
-    key: 'result',
-    render: (result: number) => result.toFixed(3),
+    width: '20%',
+    render: (result: number) => {
+      const formattedResult = new Intl.NumberFormat('en-GB', {
+        maximumFractionDigits: 3,
+      }).format(result);
+      return formattedResult;
+    },
+  },
+  {
+    title: 'Created At',
+    dataIndex: 'createdAt',
+    width: '40%',
+    render: (createdAt: string) => {
+      const date = new Date(createdAt);
+      return format(date, 'dd.MM.yyyy HH:mm');
+    },
+    sorter: (a: ConversionHistoryRecord, b: ConversionHistoryRecord) =>
+      new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
   },
 ];
 
-function ConvertionsHistory() {
+function ConversionsHistory() {
+  const [data, setData] = useState<ConversionHistoryRecord[]>([]);
+
+  useEffect(() => {
+    const fetchConversionHistory = async () => {
+      try {
+        const response = await axiosInstance.get<ConversionHistoryRecord[]>(
+          'currency-rates/conversions',
+        );
+        const formattedData = response.data.map((item) => ({
+          ...item,
+        }));
+
+        setData(formattedData);
+      } catch (error) {
+        console.error('Error fetching conversion history:', error);
+      }
+    };
+
+    fetchConversionHistory();
+  }, []);
+
   return <Table columns={columns} dataSource={data} rowKey="key" />;
 }
 
-export default ConvertionsHistory;
+export default ConversionsHistory;

@@ -1,5 +1,6 @@
 import { CurrencyRate } from '../models/currencyRate';
 import CurrencyConverter from './CurrencyConverter';
+import { format } from 'date-fns';
 import { Table } from 'antd';
 
 interface CurrencyConverterProps {
@@ -11,24 +12,21 @@ const columns = [
     title: 'Currency',
     dataIndex: 'currency',
     key: 'currency',
+    width: '20%',
   },
   {
     title: 'Rate',
     dataIndex: 'rate',
     key: 'rate',
     render: (rate: number) => rate.toFixed(3),
+    width: '40%',
   },
   {
     title: 'Date',
     dataIndex: 'date',
     key: 'date',
-    render: (date: string) => {
-      const formattedDate = new Date(date);
-      const day = formattedDate.getDate().toString().padStart(2, '0');
-      const month = (formattedDate.getMonth() + 1).toString().padStart(2, '0');
-      const year = formattedDate.getFullYear();
-      return `${day}.${month}.${year}`;
-    },
+    width: '40%',
+    render: (date: string) => format(new Date(date), 'dd.MM.yyyy'),
   },
 ];
 

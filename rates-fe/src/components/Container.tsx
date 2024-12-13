@@ -3,9 +3,10 @@ import React from 'react';
 
 interface CenteredLayoutProps {
   children: React.ReactNode;
+  style?: React.CSSProperties;
 }
 
-function Container({ children }: CenteredLayoutProps) {
+function Container({ children, style }: CenteredLayoutProps) {
   return (
     <Layout
       style={{
@@ -13,6 +14,7 @@ function Container({ children }: CenteredLayoutProps) {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
+        ...style,
       }}
     >
       {children}
